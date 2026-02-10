@@ -1,0 +1,10 @@
+POST http://10.34.32.160:3001/api/data
+Content-Type: application/json
+
+{
+  "x": 1,
+  "y": 2,
+  "sw": 1,
+  "pot": 0.5,
+  "urm": 0.5
+}

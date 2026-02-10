@@ -1,26 +1,26 @@
 #include <Arduino.h>
 #include <HTTPClient.h>
-#include "WiFi.h"
+#include <WiFi.h>
 
-#define WIFI_SSID ""
-#define WIFI_PASSWORD ""
-#define API_ENDPOINT "localhost:3000/api/data"
+#define WIFI_SSID "Koiranruokanetti"
+#define WIFI_PASSWORD "Maaritaverkkoyhteys22"
+#define API_ENDPOINT "http://10.34.32.160:3001/api/data"
 #define SOUND_SPEED (0.034)
 
 typedef struct {
-  int x_pin,
-  y_pin,
-  sw_pin; 
+  int x_pin, //EI
+  y_pin, //Ei
+  sw_pin; //Ei
 } Joystick;
 
 typedef struct {
-  int pin;
+  int pin; 
   double value;
 } Potentiometer;
 
 typedef struct {
-  int tq_pin,
-  echo_pin;
+  int tq_pin,     //Ei
+  echo_pin;       //EI
   double distance;
 } URM;
 
@@ -32,15 +32,15 @@ typedef struct {
       urm_distance;
 } DeviceState;
 
-Joystick joystick = {27, 13, 14};
+Joystick joystick = {34, 18, 5};
 Potentiometer potentiometer = {33, 0.0};
-URM urm = {19, 4, 0.0};
+URM urm = {35, 32, 0.0};
 
 //------------------- Initialization Functions ------------------//
 
 void init_joystick() {
   pinMode(joystick.x_pin, INPUT);
-  pinMode(joystick.y_pin, INPUT);
+  //pinMode(joystick.y_pin, INPUT);
   pinMode(joystick.sw_pin, INPUT);
 }
 
@@ -88,15 +88,20 @@ void init_wifi() {
 void post_data(DeviceState * state) {
   if(WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
-    http.begin(API_ENDPOINT);
+    
+    if(!http.begin(API_ENDPOINT))
+    {
+      Serial.println("Unable to connect to API endpoint");
+      return;
+    }
 
     http.addHeader("Content-Type", "application/json");
     String json_payload = "{";
     json_payload += "\"x\":" + String(state->jx_value) + ",";
     json_payload += "\"y\":" + String(state->jy_value) + ",";
     json_payload += "\"sw\":" + String(state->jsw_value) + ",";
-    json_payload += "\"potentiometer\":" + String(state->potentiometer_value, 5) + ",";
-    json_payload += "\"distance\":" + String(state->urm_distance, 5);
+    json_payload += "\"pot\":" + String(state->potentiometer_value, 5) + ",";
+    json_payload += "\"urm\":" + String(state->urm_distance, 5);
     json_payload += "}";
 
     int httpResponseCode = http.POST(json_payload);
@@ -104,6 +109,7 @@ void post_data(DeviceState * state) {
       Serial.println("Data posted successfully");
     } else {
       Serial.println("Error posting data: " + String(httpResponseCode));
+      Serial.println("Payload: " + json_payload);
     }
     http.end();
   } else {
@@ -114,18 +120,20 @@ void post_data(DeviceState * state) {
 //------------------- Main loop and setup ------------------//
 
 void setup() {
+  Serial.begin(115200);
   init_joystick();
   init_potentiometer();
   init_urm();
+  delay(1000);
+  Serial.println("Initializing WiFi...");
   init_wifi();
-
-  Serial.begin(115200);
 }
 
 void loop() {
-
+  DeviceState state;
   int x_value = analogRead(joystick.x_pin);
-  int y_value = analogRead(joystick.y_pin);
+  //int y_value = analogRead(joystick.y_pin);
+  int y_value = 0; // Placeholder since y_pin is not used
   int sw_value = !digitalRead(joystick.sw_pin);
 
   potentiometer.value = analogRead(potentiometer.pin) / 4095.0; // Normalize to 0-1
@@ -141,9 +149,17 @@ void loop() {
   Serial.println(potentiometer.value, 4); // Print with 4 decimal places
 
   // Measure distance using URM
-  urm.distance = read_urm();
+  //urm.distance = read_urm();
+  urm.distance = 0; // Placeholder since URM is not used
   Serial.print("Distance: ");
   Serial.print(urm.distance);
 
-  delay(100);
+  state.jx_value = x_value;
+  state.jy_value = y_value;
+  state.jsw_value = sw_value;
+  state.potentiometer_value = potentiometer.value;
+  state.urm_distance = urm.distance;
+
+  post_data(&state);
+  delay(2000);
 }

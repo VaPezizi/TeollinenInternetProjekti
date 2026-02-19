@@ -1,0 +1,1 @@
+docker run -d --name node_backend -p 3001:3001 --restart unless-stopped node_backend

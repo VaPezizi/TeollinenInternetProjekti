@@ -1,0 +1,8 @@
+docker run -d \
+--name mongo \
+--network appnet \
+-e MONGO_INITDB_ROOT_USERNAME=teollineninternet \
+-e MONGO_INITDB_ROOT_PASSWORD=Teollineninternet1 \
+-e MONGO_INITDB_DATABASE=appdb \
+-v mongo_data:/data/db \
+mongo:7

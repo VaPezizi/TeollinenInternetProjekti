@@ -76,7 +76,7 @@ app.post('/api/data', async (request, response) => {
     }
     
 
-    console.log("request body content", request.body.content);
+    console.log("request body content", request.body);
     const newMeasurement = {
         y: p.y, // x,y axis of joystick
         x: p.x, 

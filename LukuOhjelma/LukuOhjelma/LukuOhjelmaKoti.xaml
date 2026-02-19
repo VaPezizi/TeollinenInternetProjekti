@@ -17,12 +17,25 @@
                 <RowDefinition Height="*" />    <!-- List -->
             </Grid.RowDefinitions>
 
-            <!-- Title -->
-            <TextBlock Grid.Row="0"
-                       Text="Measurements"
-                       FontSize="20"
-                       FontWeight="Bold"
-                       Margin="0,0,0,8" />
+            <!-- Title and Delete button -->
+            <Grid Grid.Row="0" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Measurements"
+                           FontSize="20"
+                           FontWeight="Bold" />
+
+                <Button Grid.Column="1"
+                        Content="Delete"
+                        Margin="8,0,0,0"
+                        Padding="12,4"
+                        HorizontalAlignment="Right"
+                        Click="DeleteButton_Click" />
+            </Grid>
 
             <!-- Column headers -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,4">
@@ -39,7 +52,9 @@
                      Grid.Row="2"
                      ItemsSource="{Binding Measurements}"
                      SelectedItem="{Binding SelectedMeasurement, Mode=TwoWay}"
-                     SelectionChanged="MeasurementsListBox_SelectionChanged">
+                     SelectionMode="Extended"
+                     SelectionChanged="MeasurementsListBox_SelectionChanged"
+                     KeyDown="MeasurementsListBox_KeyDown">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Margin="0,2">

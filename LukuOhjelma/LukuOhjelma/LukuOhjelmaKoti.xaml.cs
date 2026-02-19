@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Linq;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -10,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Navigation;
 using MQTTnet;
 using MQTTnet.Client;
@@ -74,10 +76,33 @@ namespace LukuOhjelma
 
                 var json = await response.Content.ReadAsStringAsync();
 
-                var items = JsonSerializer.Deserialize<List<ApiMeasurement>>(json, new JsonSerializerOptions
+                var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
-                });
+                };
+
+                MeasurementsResponse? wrapper = null;
+                List<ApiMeasurement>? items = null;
+
+                try
+                {
+                    // Prefer wrapped form: { measurements: [...] }
+                    wrapper = JsonSerializer.Deserialize<MeasurementsResponse>(json, options);
+                }
+                catch (JsonException)
+                {
+                    // If the API returns a bare array instead of an object, fall back below.
+                }
+
+                if (wrapper?.measurements != null)
+                {
+                    items = wrapper.measurements;
+                }
+                else
+                {
+                    // Fallback: API returned a plain array of measurements.
+                    items = JsonSerializer.Deserialize<List<ApiMeasurement>>(json, options);
+                }
 
                 if (items == null)
                 {
@@ -91,12 +116,26 @@ namespace LukuOhjelma
 
                     foreach (var item in items)
                     {
+						bool swBool = false;
+						if (item.sw.ValueKind == JsonValueKind.Number)
+						{
+							if (item.sw.TryGetInt32(out var n))
+							{
+								swBool = n != 0;
+							}
+						}
+						else if (item.sw.ValueKind == JsonValueKind.True)
+						{
+							swBool = true;
+						}
+
                         var measurement = new MqttMeasurement
                         {
+							Id = item._id,
                             Timestamp = item.timestamp ?? DateTime.Now,
                             Y = item.y,
                             X = item.x,
-                            Sw = item.sw,
+							Sw = swBool,
                             Pot = item.pot,
                             Urm = item.urm
                         };
@@ -183,10 +222,11 @@ namespace LukuOhjelma
                 {
                     var measurement = new MqttMeasurement
                     {
+                        Id = data._id ?? data.id,
                         Timestamp = DateTime.Now,
                         Y = data.y,
                         X = data.x,
-                        Sw = data.sw,
+						Sw = data.sw != 0,
                         Pot = data.pot,
                         Urm = data.urm
                     };
@@ -222,6 +262,56 @@ namespace LukuOhjelma
             _viewModel.ListViewVisibility = Visibility.Visible;
             _viewModel.SelectedMeasurement = null;
             MeasurementsListBox.SelectedItem = null;
+        }
+
+        private async void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            await DeleteSelectedMeasurementsAsync();
+        }
+
+        private async void MeasurementsListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                await DeleteSelectedMeasurementsAsync();
+                e.Handled = true;
+            }
+        }
+
+        private async Task DeleteSelectedMeasurementsAsync()
+        {
+            // Snapshot selection to avoid modifying the collection during enumeration.
+            var selected = MeasurementsListBox.SelectedItems
+                .OfType<MqttMeasurement>()
+                .ToList();
+
+            if (selected.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var measurement in selected)
+            {
+                if (!string.IsNullOrWhiteSpace(measurement.Id))
+                {
+                    try
+                    {
+                        var response = await _httpClient.DeleteAsync($"http://193.166.25.207:3001/api/data/{measurement.Id}");
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            MessageBox.Show($"Failed to delete measurement {measurement.Id}: {response.StatusCode}", "Backend error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            continue;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Failed to delete measurement {measurement.Id}: {ex.Message}", "Backend error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        continue;
+                    }
+                }
+
+                _viewModel.Measurements.Remove(measurement);
+            }
         }
     }
 
@@ -310,6 +400,7 @@ namespace LukuOhjelma
 
     public sealed class MqttMeasurement
     {
+        public string? Id { get; set; }
         public DateTime Timestamp { get; set; }
         public double Y { get; set; }
         public double X { get; set; }
@@ -326,9 +417,11 @@ namespace LukuOhjelma
 
     public sealed class MqttPayload
     {
+        public string? _id { get; set; }
+        public string? id { get; set; }
         public double y { get; set; }
         public double x { get; set; }
-        public bool sw { get; set; }
+        public int sw { get; set; }
         public double pot { get; set; }
         public double urm { get; set; }
     }
@@ -336,11 +429,17 @@ namespace LukuOhjelma
     // DTO used for deserializing measurements from the backend REST API.
     public sealed class ApiMeasurement
     {
+        public string? _id { get; set; }
         public double y { get; set; }
         public double x { get; set; }
-        public bool sw { get; set; }
+		public JsonElement sw { get; set; }
         public double pot { get; set; }
         public double urm { get; set; }
         public DateTime? timestamp { get; set; }
     }
+
+	public sealed class MeasurementsResponse
+	{
+		public List<ApiMeasurement>? measurements { get; set; }
+	}
 }

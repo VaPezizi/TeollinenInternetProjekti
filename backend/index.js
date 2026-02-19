@@ -12,10 +12,23 @@ let options = {
   host: process.env.MQTT_HOST,
   port: parseInt(process.env.MQTT_PORT),
   username: process.env.MQTT_USERNAME,
-  password: process.env.MQTT_PASSWORD
+  password: process.env.MQTT_PASSWORD,
+  protocol: "mqtts",
+  protocolVersion: 5,
 }
 
+console.log("MQTT connection options: ", options);
+
 let client = mqtt.connect(options);
+client.on('connect', (connack) => {
+  console.log('MQTT connected', connack)
+})
+client.on('reconnect', (connack) => {
+  console.log('MQTT reconnecting', connack)
+})
+client.on('error', (err) => {
+  console.error('MQTT error', err)
+})
 
 const app = express();
 const server = createServer(app);
@@ -86,11 +99,26 @@ app.post('/api/data', async (request, response) => {
     };
     lista.push(newMeasurement);
 
-    client.publish('teollinen/data', JSON.stringify(newMeasurement));
-    
-    return response.status(201).json({
-      success: true,
-      data: newMeasurement
+    const payload = JSON.stringify(newMeasurement);
+    if (!client.connected) {
+      console.warn('MQTT client not connected — publish may fail');
+    }
+
+    client.publish('teollinen/data', payload, { qos: 1 }, (err) => {
+      if (err) {
+        console.error('MQTT publish failed:', err);
+        return response.status(500).json({
+          success: false,
+          message: 'MQTT publish failed',
+          error: err && err.message
+        });
+      }
+
+      console.log('MQTT publish acknowledged for topic teollinen/data');
+      return response.status(201).json({
+        success: true,
+        data: newMeasurement
+      });
     });
   } catch (error) {
     return response.status(500).json({

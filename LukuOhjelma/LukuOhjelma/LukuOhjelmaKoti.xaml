@@ -12,18 +12,31 @@
         <!-- List view -->
         <Grid x:Name="ListViewGrid" Visibility="{Binding ListViewVisibility}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" /> <!-- Title -->
+                <RowDefinition Height="Auto" /> <!-- Column headers -->
+                <RowDefinition Height="*" />    <!-- List -->
             </Grid.RowDefinitions>
 
+            <!-- Title -->
             <TextBlock Grid.Row="0"
                        Text="Measurements"
                        FontSize="20"
                        FontWeight="Bold"
                        Margin="0,0,0,8" />
 
+            <!-- Column headers -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,4">
+                <TextBlock Text="Time" Width="80" FontWeight="Bold" />
+                <TextBlock Text="Y" Margin="14,0,0,0" FontWeight="Bold" />
+                <TextBlock Text="X" Margin="40,0,0,0" FontWeight="Bold" />
+                <TextBlock Text="Pot" Margin="25,0,0,0" FontWeight="Bold" />
+                <TextBlock Text="URM" Margin="20,0,0,0" FontWeight="Bold" />
+                <TextBlock Text="SW" Margin="15,0,0,0" FontWeight="Bold" />
+            </StackPanel>
+
+            <!-- List of measurements -->
             <ListBox x:Name="MeasurementsListBox"
-                     Grid.Row="1"
+                     Grid.Row="2"
                      ItemsSource="{Binding Measurements}"
                      SelectedItem="{Binding SelectedMeasurement, Mode=TwoWay}"
                      SelectionChanged="MeasurementsListBox_SelectionChanged">

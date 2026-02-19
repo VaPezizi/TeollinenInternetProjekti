@@ -4,8 +4,18 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 //import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import mqtt from 'mqtt';
 
 dotenv.config();
+
+let options = {
+  host: process.env.MQTT_HOST,
+  port: parseInt(process.env.MQTT_PORT),
+  username: process.env.MQTT_USERNAME,
+  password: process.env.MQTT_PASSWORD
+}
+
+let client = mqtt.connect(options);
 
 const app = express();
 const server = createServer(app);
@@ -75,7 +85,9 @@ app.post('/api/data', async (request, response) => {
         urm: p.urm      //Urm distance
     };
     lista.push(newMeasurement);
-      
+
+    client.publish('teollinen/data', JSON.stringify(newMeasurement));
+    
     return response.status(201).json({
       success: true,
       data: newMeasurement

@@ -2,7 +2,7 @@ import express, { json } from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-//import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import mqtt from 'mqtt';
 
@@ -16,6 +16,22 @@ let options = {
   protocol: "mqtts",
   protocolVersion: 5,
 }
+
+const mongoURI = process.env.MONGO_URI;
+console.log("Connecting to MongoDB at ", mongoURI);
+mongoose.set('strictQuery', false);
+mongoose.connect(mongoURI)
+
+const measurementsSchema = new mongoose.Schema({
+  x: Number,
+  y: Number,
+  sw: Number,
+  pot: Number,
+  urm: Number,
+  timestamp: { type: Date, default: Date.now }
+});
+
+const Measurement = mongoose.model('Measurement', measurementsSchema);
 
 console.log("MQTT connection options: ", options);
 
@@ -66,7 +82,19 @@ app.get('/api/measurements', async (request, response) => {
     count: measurements.length
   })
   */
-  return response.status(200).json(lista)
+  try {   
+    const measurements = await Measurement.find();
+    response.status(200).json({
+      measurements
+    })
+  }
+  catch (error) {
+    response.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+  
 });
 
 app.post('/api/data', async (request, response) => {
@@ -90,16 +118,26 @@ app.post('/api/data', async (request, response) => {
     
 
     console.log("request body content", request.body);
-    const newMeasurement = {
+    
+    /*const newMeasurement = {
         y: p.y, // x,y axis of joystick
         x: p.x, 
         sw: p.sw,   //Joystick switch (pressed or not)
         pot: p.pot,     //Potentiometer value
         urm: p.urm      //Urm distance
     };
-    lista.push(newMeasurement);
+    lista.push(newMeasurement);*/
+    const newMeasurement = new Measurement({
+      y: p.y, // x,y axis of joystick
+      x: p.x,
+      sw: p.sw,   //Joystick switch (pressed or not)
+      pot: p.pot,     //Potentiometer value
+      urm: p.urm      //Urm distance
 
-    const payload = JSON.stringify(newMeasurement);
+    });
+    const savedMeasurement = await newMeasurement.save();
+
+    const payload = JSON.stringify(savedMeasurement);
     if (!client.connected) {
       console.warn('MQTT client not connected — publish may fail');
     }
@@ -117,7 +155,7 @@ app.post('/api/data', async (request, response) => {
       console.log('MQTT publish acknowledged for topic teollinen/data');
       return response.status(201).json({
         success: true,
-        data: newMeasurement
+        data: savedMeasurement
       });
     });
   } catch (error) {

@@ -14,7 +14,8 @@
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "http": "^0.0.1-security",
-    "socket.io": "^4.8.3",
-    "mqtt": "^4.3.7"
+    "mongoose": "^9.2.1",
+    "mqtt": "^4.3.7",
+    "socket.io": "^4.8.3"
   }
 }

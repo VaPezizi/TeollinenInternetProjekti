@@ -70,6 +70,10 @@
                                        Margin="8,0,0,0" />
                             <TextBlock Text="{Binding Sw}"
                                        Margin="8,0,0,0" />
+                            <!-- Per-row delete checkbox on the right -->
+                            <CheckBox Margin="8,0,0,0"
+                                      VerticalAlignment="Center"
+                                      IsChecked="{Binding IsMarkedForDeletion, Mode=TwoWay}" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

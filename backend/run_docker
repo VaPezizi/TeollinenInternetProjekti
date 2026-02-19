@@ -1,1 +1,1 @@
-docker run -d --name backend --network appnet -p 3001:3001 --restart unless-stopped backend
+docker run -d --name backend --network appnet --env-file -env -p 3001:3001 --restart unless-stopped backend

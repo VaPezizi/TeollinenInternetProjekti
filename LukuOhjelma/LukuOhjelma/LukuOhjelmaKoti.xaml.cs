@@ -408,6 +408,9 @@ namespace LukuOhjelma
         public double Pot { get; set; }
         public double Urm { get; set; }
 
+        // When true, this row will be deleted when the user presses the Delete button.
+        public bool IsMarkedForDeletion { get; set; }
+
         public override string ToString()
         {
             // Used by default ListBox item rendering when no template is applied.

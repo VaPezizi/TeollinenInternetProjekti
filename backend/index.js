@@ -74,6 +74,26 @@ typedef struct {
 } DeviceState;
 */
 
+app.delete('/api/data/:id', async (request, response) => {
+  try {
+    const deleted = await Measurement.deleteOne({ _id: request.params.id });
+    if (deleted.deletedCount === 0) {
+      return response.status(404).json({
+        success: false,
+        message: 'Measurement not found'
+      });
+    }
+    response.status(200).json({
+      success: true,
+      message: 'Measurement deleted'
+    });
+  } catch (error) {
+    response.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
 
 app.get('/api/measurements', async (request, response) => {
   /*response.json({

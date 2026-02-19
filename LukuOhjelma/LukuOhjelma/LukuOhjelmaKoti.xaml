@@ -1,0 +1,89 @@
+﻿<Page x:Class="LukuOhjelma.LukuOhjelmaKoti"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:LukuOhjelma"
+      mc:Ignorable="d" 
+      d:DesignHeight="350" d:DesignWidth="500"
+      Title="LukuOhjelmaKoti">
+
+    <Grid Margin="16">
+        <!-- List view -->
+        <Grid x:Name="ListViewGrid" Visibility="{Binding ListViewVisibility}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Text="Measurements"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       Margin="0,0,0,8" />
+
+            <ListBox x:Name="MeasurementsListBox"
+                     Grid.Row="1"
+                     ItemsSource="{Binding Measurements}"
+                     SelectedItem="{Binding SelectedMeasurement, Mode=TwoWay}"
+                     SelectionChanged="MeasurementsListBox_SelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Text="{Binding Timestamp, StringFormat={}{0:HH:mm:ss}}"
+                                       Width="80" />
+                            <TextBlock Text="{Binding X, StringFormat={}{0:F2}}"
+                                       Margin="8,0,0,0" />
+                            <TextBlock Text="{Binding Y, StringFormat={}{0:F2}}"
+                                       Margin="8,0,0,0" />
+                            <TextBlock Text="{Binding Pot, StringFormat={}{0:F2}}"
+                                       Margin="8,0,0,0" />
+                            <TextBlock Text="{Binding Urm, StringFormat={}{0:F2}}"
+                                       Margin="8,0,0,0" />
+                            <TextBlock Text="{Binding Sw}"
+                                       Margin="8,0,0,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+
+        <!-- Detail view -->
+        <Grid x:Name="DetailViewGrid" Visibility="{Binding DetailViewVisibility}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Row="0" Grid.ColumnSpan="2" Content="Back" Width="80" Margin="0,0,0,12"
+                    Click="BackButton_Click" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Timestamp:" Margin="0,0,8,4" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMeasurement.Timestamp, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}" Margin="0,0,0,4" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Y:" Margin="0,0,8,4" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMeasurement.Y}" Margin="0,0,0,4" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="X:" Margin="0,0,8,4" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMeasurement.X}" Margin="0,0,0,4" />
+
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="SW:" Margin="0,0,8,4" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMeasurement.Sw}" Margin="0,0,0,4" />
+
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="Pot:" Margin="0,0,8,4" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMeasurement.Pot}" Margin="0,0,0,4" />
+
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="URM:" Margin="0,1,8,0" VerticalAlignment="Top" />
+            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedMeasurement.Urm}" Margin="0,0,0,4" />
+        </Grid>
+    </Grid>
+</Page>

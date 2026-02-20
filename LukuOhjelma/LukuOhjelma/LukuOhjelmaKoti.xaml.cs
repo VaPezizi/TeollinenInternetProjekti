@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Formatter;
+using System.Diagnostics;
 
 namespace LukuOhjelma
 {
@@ -280,13 +281,14 @@ namespace LukuOhjelma
 
         private async Task DeleteSelectedMeasurementsAsync()
         {
-            // Snapshot selection to avoid modifying the collection during enumeration.
-            var selected = MeasurementsListBox.SelectedItems
-                .OfType<MqttMeasurement>()
+            // Collect all measurements that are marked for deletion via the checkbox.
+            var selected = _viewModel.Measurements
+                .Where(m => m.IsMarkedForDeletion)
                 .ToList();
 
             if (selected.Count == 0)
             {
+                Debug.WriteLine("No measurements marked for deletion.");
                 return;
             }
 
@@ -302,6 +304,7 @@ namespace LukuOhjelma
                             MessageBox.Show($"Failed to delete measurement {measurement.Id}: {response.StatusCode}", "Backend error", MessageBoxButton.OK, MessageBoxImage.Warning);
                             continue;
                         }
+
                     }
                     catch (Exception ex)
                     {

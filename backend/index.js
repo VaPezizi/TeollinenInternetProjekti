@@ -17,8 +17,12 @@ let options = {
   protocolVersion: 5,
 }
 
-const mongoURI = process.env.MONGO_URI;
+const mongoURI = process.env.MONGODB_URI;
+console.log("MongoDB URI from env: ", mongoURI);
 console.log("Connecting to MongoDB at ", mongoURI);
+console.log(options);
+
+
 mongoose.set('strictQuery', false);
 mongoose.connect(mongoURI)
 
@@ -76,7 +80,14 @@ typedef struct {
 
 app.delete('/api/data/:id', async (request, response) => {
   try {
-    const deleted = await Measurement.deleteOne({ _id: request.params.id });
+    console.log("Deleting measurement with id: ", request.params.id);
+    if (!mongoose.Types.ObjectId.isValid(request.params.id)) {
+      return response.status(400).json({
+        success: false,
+        message: 'Invalid measurement ID'
+      });
+    }
+    const deleted = await Measurement.deleteOne({ _id: (request.params.id) });
     if (deleted.deletedCount === 0) {
       return response.status(404).json({
         success: false,
@@ -161,7 +172,7 @@ app.post('/api/data', async (request, response) => {
     if (!client.connected) {
       console.warn('MQTT client not connected — publish may fail');
     }
-
+    console.log('Publishing to MQTT topic teollinen/data with payload:', payload);
     client.publish('teollinen/data', payload, { qos: 1 }, (err) => {
       if (err) {
         console.error('MQTT publish failed:', err);

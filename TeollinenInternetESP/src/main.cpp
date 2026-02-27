@@ -4,7 +4,7 @@
 
 #define WIFI_SSID "Koiranruokanetti"
 #define WIFI_PASSWORD "Maaritaverkkoyhteys22"
-#define API_ENDPOINT "http://ip:3001/api/data"
+#define API_ENDPOINT "http://193.166.25.207:3001/api/data"
 #define SOUND_SPEED (0.034)
 
 typedef struct {

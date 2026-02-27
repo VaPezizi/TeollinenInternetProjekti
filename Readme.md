@@ -15,6 +15,16 @@ Prerequisites:
 - For the ESP: PlatformIO
 - For the WPF app: .NET SDK / Visual Studio
 
+**ESP-part**
+
+1. Change the ip address defined at the top of src/main
+
+2. Change the Wifi settings to match your wifi
+
+3. Connect the peripherals
+
+4. Build and upload
+
 **Backend — run locally**
 
 1. Open a shell and change to the backend folder:
@@ -108,5 +118,3 @@ Notes:
 
 - Backend server: [backend/index.js](backend/index.js)
 - Docker helper: [backend/run_docker](backend/run_docker)
-
-If you want, I can add a `backend/.env.example` file and a basic `docker-compose.yml` to simplify local development. Would you like me to add those?

@@ -6,7 +6,7 @@
       xmlns:ScottPlot="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF"
       xmlns:local="clr-namespace:LukuOhjelma"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
+      d:DesignHeight="800" d:DesignWidth="800"
       Title="StatisticsPage">
     <Grid>
         <Grid VerticalAlignment="Top" HorizontalAlignment="Stretch">
@@ -37,18 +37,21 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Row="0" Grid.Column="0"
                                Text="From: "
                                VerticalAlignment="Center"
                                Margin="0,0,8,0" />
-                <DatePicker Grid.Row="0" Grid.Column="1" />
+                <DatePicker x:Name="FromDatePicker" Grid.Row="0" Grid.Column="1" />
                 <TextBlock Grid.Row="0" Grid.Column="2"
                                Text="To: "
                                VerticalAlignment="Center"
                                Margin="0,0,8,0" />
-                <DatePicker Grid.Row="0" Grid.Column="3" Margin="0,0,8,0" />
-            
+                <DatePicker x:Name="ToDatePicker" Grid.Row="0" Grid.Column="3" Margin="0,0,8,0" />
+                <Button Grid.Row="0" Grid.Column="4" Content="Apply" Click="ApplyButtonClick" Margin="0,0,8,0"/>
+                <Button Grid.Row="0" Grid.Column="5" Content="Reset" Click="ResetButtonClick" Margin="0,0,8,0"/>
             </Grid>
 
             <!--Statistics themselfs-->
@@ -58,6 +61,8 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -72,22 +77,26 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Row="0"
                                Text="Average Y:"
-                               FontSize="16"
+                               FontSize="13"
                                FontWeight="Bold"
-                               Margin="0,0,0,8" />
+                               Margin="0,0,0,8" 
+                               x:Name="AVGY"/>
                     <TextBlock Grid.Row="1"
                                Text="Average X:"
-                               FontSize="16"
+                               FontSize="13"
                                FontWeight="Bold"
-                               Margin="0,0,0,8" />
+                               Margin="0,0,0,8" 
+                               x:Name="AVGX"/>
                     <TextBlock Grid.Row="2"
                                Text="SW uptime:"
-                               FontSize="16"
-                               FontWeight="Bold" />
+                               FontSize="13"
+                               FontWeight="Bold"
+                               x:Name="SWUP"/>
 
                     
                 </Grid>
@@ -98,7 +107,35 @@
                     Width="200"
                     Height="200"/>
 
+                <!-- URM -->
 
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           Text="Average URM:"
+                           FontSize="13"
+                           FontWeight="Bold"
+                           Margin="16,0,0,6" 
+                           x:Name="AVGURM"/>
+                <ScottPlot:WpfPlot x:Name="URMPlot"
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="2" 
+                    Width="200"
+                    Height="200"/>
+                <!-- Pot -->
+                <TextBlock Grid.Row="2"
+                   Grid.Column="0"
+                   Text="Average potentiometer:"
+                   FontSize="13"
+                   FontWeight="Bold"
+                   Margin="16,0,0,6" 
+                   x:Name="AVGPOT"/>
+                <ScottPlot:WpfPlot x:Name="POTplot"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="2" 
+                    Width="200"
+                    Height="200"/>
 
             </Grid>
 

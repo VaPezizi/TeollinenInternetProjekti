@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -24,36 +25,73 @@ namespace LukuOhjelma
         private const double AxisMax = 4095;
         private const double AxisCenter = (AxisMin + AxisMax) / 2;
         private const double AxisRadius = AxisMax / 2;
+
         public StatisticsPage(ObservableCollection<MqttMeasurement> Measurements)
         {
-            //_measurements = Measurements;
             InitializeComponent();
             _measurements = Measurements;
-            RenderChart();
+            MeasurementsPlot.UserInputProcessor.Disable();
+            RenderStickChart();
+            RenderURMChart();
+            RenderPotChart();
+            CalculateStats();
         }
-
 
         private void MainMenuButton_Click(object sender, RoutedEventArgs e)
         {
-             NavigationService?.GoBack();
+            NavigationService?.GoBack();
         }
 
-        private void RenderChart()
-        {             // Clear existing data points
-            
-            //.Series[0].Points.Clear();
-            // Add new data points from the measurements
+        private void DateRangeChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            RenderStickChart();
+            RenderURMChart();
+            RenderPotChart();
+            CalculateStats();
+        }
 
-            if (_measurements.Count == 0)
+        private IEnumerable<MqttMeasurement> GetFilteredMeasurements()
+        {
+            var query = _measurements.AsEnumerable();
+
+            if (FromDatePicker.SelectedDate is DateTime fromDate)
+                query = query.Where(m => m.Timestamp >= fromDate.Date);
+
+            if (ToDatePicker.SelectedDate is DateTime toDate)
             {
-                MeasurementsPlot.Refresh();
+                var endExclusive = toDate.Date.AddDays(1);
+                query = query.Where(m => m.Timestamp < endExclusive);
+            }
+
+            return query;
+        }
+
+        private void CalculateStats()
+        {
+            var filtered = GetFilteredMeasurements().ToList();
+            if (filtered.Count == 0)
+            {
+                AVGX.Text = "Average X: N/A";
+                AVGY.Text = "Average Y: N/A";
+                SWUP.Text = "SW %: N/A";
                 return;
             }
 
-            /*var xs = _measurements.Select(m => m.Timestamp.ToOADate()).ToArray();
-            var ys = _measurements.Select(m => m.Y).ToArray();*/
-            var xs = _measurements.Select(m => m.X).ToArray();
-            var ys = _measurements.Select(m => m.Y).ToArray();
+            var avgx = filtered.Average(m => m.X);
+            var avgy = filtered.Average(m => m.Y);
+            var swu = filtered.Count(m => m.Sw) / (double)filtered.Count * 100;
+
+            AVGX.Text = $"Average X: {avgx:F1}";
+            AVGY.Text = $"Average Y: {avgy:F1}";
+            SWUP.Text = $"SW %: {swu:F1} %";
+
+            AVGPOT.Text = $"Average Pot: {filtered.Average(m => m.Pot):F1}";
+            AVGURM.Text = $"Average URM: {filtered.Average(m => m.Urm):F1}";
+        }
+
+        private void RenderStickChart()
+        {
+            var filtered = GetFilteredMeasurements().ToList();
 
             MeasurementsPlot.Plot.Clear();
 
@@ -63,19 +101,73 @@ namespace LukuOhjelma
             circle.LineColor = ScottPlot.Colors.Red;
 
             MeasurementsPlot.Plot.Axes.SetLimits(AxisMin, AxisMax, AxisMin, AxisMax);
+            MeasurementsPlot.Plot.Axes.Margins(0.15, 0.1);
             MeasurementsPlot.Plot.Axes.SquareUnits();
 
-            MeasurementsPlot.Plot.Add.Scatter(xs, ys);
+            if (filtered.Count > 0)
+            {
+                var xs = filtered.Select(m => m.X).ToArray();
+                var ys = filtered.Select(m => m.Y).ToArray();
+                MeasurementsPlot.Plot.Add.Scatter(xs, ys);
+            }
 
-            //MeasurementsPlot.Plot.Add.Radar(xs, ys);
-            //MeasurementsPlot.Plot.XAxis.DateTimeFormat(true);
-            //MeasurementsPlot.Plot.Axes.X
-            MeasurementsPlot.Plot.Title("Pisteet");
-            //MeasurementsPlot.Plot.YLabel("Y");
-            //MeasurementsPlot.Plot.XLabel("X");
+            MeasurementsPlot.Plot.Title("Tatin sijainnit");
             MeasurementsPlot.Refresh();
         }
-    }
 
+        private void RenderURMChart()
+        {
+            var filtered = GetFilteredMeasurements().ToList();
+            URMPlot.Plot.Clear();
+
+            if (filtered.Count > 0)
+            {
+                var xs = filtered.Select(m => m.Timestamp.ToOADate()).ToArray();
+                var ys = filtered.Select(m => m.Urm).ToArray();
+                URMPlot.Plot.Add.Scatter(xs, ys);
+            }
+
+            URMPlot.Plot.Title("URM over time");
+            URMPlot.Plot.YLabel("URM");
+            URMPlot.Plot.XLabel("Time");
+            URMPlot.Refresh();
+        }
+
+        private void ResetButtonClick(object sender, RoutedEventArgs e)
+        {
+            FromDatePicker.SelectedDate = null;
+            ToDatePicker.SelectedDate = null;
+            RenderStickChart();
+            RenderURMChart();
+            RenderPotChart();
+            CalculateStats();
+        }
+
+        private void ApplyButtonClick(object sender, RoutedEventArgs e)
+        {
+            RenderStickChart();
+            RenderURMChart();
+            RenderPotChart();
+            CalculateStats();
+        }
+
+        private void RenderPotChart()
+        {
+            var filtered = GetFilteredMeasurements().ToList();
+            POTplot.Plot.Clear();
+
+            if (filtered.Count > 0)
+            {
+                var xs = filtered.Select(m => m.Timestamp.ToOADate()).ToArray();
+                var ys = filtered.Select(m => m.Pot).ToArray();
+                POTplot.Plot.Add.Scatter(xs, ys);
+            }
+
+            POTplot.Plot.Title("Pot over time");
+            POTplot.Plot.YLabel("Pot");
+            POTplot.Plot.XLabel("Time");
+            POTplot.Refresh();
+        }
+    }
 }
 

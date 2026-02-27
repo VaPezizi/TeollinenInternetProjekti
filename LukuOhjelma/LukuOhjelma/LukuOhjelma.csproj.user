@@ -5,5 +5,8 @@
     <Compile Update="LukuOhjelmaKoti.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="StatisticsPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

@@ -265,6 +265,12 @@ namespace LukuOhjelma
             MeasurementsListBox.SelectedItem = null;
         }
 
+        private void StatisticsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var statsPage = new StatisticsPage(_viewModel.Measurements);
+            NavigationService?.Navigate(statsPage);
+        }
+
         private async void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             await DeleteSelectedMeasurementsAsync();

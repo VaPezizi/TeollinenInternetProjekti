@@ -10,11 +10,15 @@
 
     <Grid Margin="16">
         <!-- List view -->
-        <Grid x:Name="ListViewGrid" Visibility="{Binding ListViewVisibility}">
+
+        <Grid x:Name="ListViewGrid" Visibility="{Binding ListViewVisibility}" Margin="0,0,0,30">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" /> <!-- Title -->
-                <RowDefinition Height="Auto" /> <!-- Column headers -->
-                <RowDefinition Height="*" />    <!-- List -->
+                <RowDefinition Height="Auto" />
+                <!-- Title -->
+                <RowDefinition Height="Auto" />
+                <!-- Column headers -->
+                <RowDefinition Height="*" />
+                <!-- List -->
             </Grid.RowDefinitions>
 
             <!-- Title and Delete button -->
@@ -117,5 +121,26 @@
             <TextBlock Grid.Row="6" Grid.Column="0" Text="URM:" Margin="0,1,8,0" VerticalAlignment="Top" />
             <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedMeasurement.Urm}" Margin="0,0,0,4" />
         </Grid>
+
+        <Grid VerticalAlignment="Bottom" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Button x:Name="StatisticsButton"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Grid.Row="0"
+                    Width="80"
+                    Content="Statistics"
+                    Click="StatisticsButton_Click"/>
+
+
+        </Grid>
+
     </Grid>
 </Page>

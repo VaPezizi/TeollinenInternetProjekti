@@ -4,7 +4,7 @@
 
 #define WIFI_SSID "Koiranruokanetti"
 #define WIFI_PASSWORD "Maaritaverkkoyhteys22"
-#define API_ENDPOINT "http://10.34.32.160:3001/api/data"
+#define API_ENDPOINT "http://ipaddress:3001/api/data"
 #define SOUND_SPEED (0.034)
 
 typedef struct {
@@ -32,16 +32,16 @@ typedef struct {
       urm_distance;
 } DeviceState;
 
-Joystick joystick = {34, 18, 5};
+Joystick joystick = {34, 35, 5};
 Potentiometer potentiometer = {33, 0.0};
-URM urm = {35, 32, 0.0};
+URM urm = {26, 32, 0.0};
 
 //------------------- Initialization Functions ------------------//
 
 void init_joystick() {
   pinMode(joystick.x_pin, INPUT);
-  //pinMode(joystick.y_pin, INPUT);
-  pinMode(joystick.sw_pin, INPUT);
+  pinMode(joystick.y_pin, INPUT);
+  pinMode(joystick.sw_pin, INPUT_PULLUP);
 }
 
 void init_potentiometer() {
@@ -49,11 +49,18 @@ void init_potentiometer() {
 }
 
 void init_urm() {
+  if (!digitalPinCanOutput(urm.tq_pin)) {
+    Serial.println("URM trigger pin is not output-capable");
+    return;
+  }
   pinMode(urm.tq_pin, OUTPUT);
   pinMode(urm.echo_pin, INPUT);
 }
 
 long read_urm(){
+  if (!digitalPinCanOutput(urm.tq_pin)) {
+    return 0;
+  }
   digitalWrite(urm.tq_pin, LOW);
   delayMicroseconds(2);
   digitalWrite(urm.tq_pin, HIGH);
@@ -104,7 +111,8 @@ void post_data(DeviceState * state) {
     json_payload += "\"urm\":" + String(state->urm_distance, 5);
     json_payload += "}";
 
-    int httpResponseCode = http.POST(json_payload);
+    //int httpResponseCode = http.POST(json_payload);
+    int httpResponseCode = 0;
     if(httpResponseCode > 0) {
       Serial.println("Data posted successfully");
     } else {
@@ -132,8 +140,8 @@ void setup() {
 void loop() {
   DeviceState state;
   int x_value = analogRead(joystick.x_pin);
-  //int y_value = analogRead(joystick.y_pin);
-  int y_value = 0; // Placeholder since y_pin is not used
+  int y_value = analogRead(joystick.y_pin);
+  //int y_value = 0; // Placeholder since y_pin is not used
   int sw_value = !digitalRead(joystick.sw_pin);
 
   potentiometer.value = analogRead(potentiometer.pin) / 4095.0; // Normalize to 0-1
@@ -149,8 +157,9 @@ void loop() {
   Serial.println(potentiometer.value, 4); // Print with 4 decimal places
 
   // Measure distance using URM
-  //urm.distance = read_urm();
-  urm.distance = 0; // Placeholder since URM is not used
+  urm.distance = read_urm();
+  //urm.distance = 0; // Placeholder since URM is not used
+  //urm.distance = 123.45; // Placeholder value for testing
   Serial.print("Distance: ");
   Serial.print(urm.distance);
 
